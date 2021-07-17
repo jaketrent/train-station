@@ -6,7 +6,7 @@ describe('POST /api/trains', () => {
   let request
   const existingTrain = {
     name: 'EXST',
-    times: ['3:33'],
+    times: ['03:33'],
   }
 
   beforeAll(() => {
@@ -34,7 +34,7 @@ describe('POST /api/trains', () => {
 
     test('bad name and times', async () => {
       const train = {
-        times: ['badDatetime', '2:23'],
+        times: ['badDatetime', '02:23'],
       }
       const res = await request.post('/api/trains').send({ data: train })
 
@@ -51,7 +51,7 @@ describe('POST /api/trains', () => {
     test('pre-existing train', async () => {
       const train = {
         name: existingTrain.name,
-        times: ['8:41'],
+        times: ['08:41'],
       }
       const res = await request.post('/api/trains').send({ data: train })
 
@@ -65,7 +65,7 @@ describe('POST /api/trains', () => {
   it('creates new train', async () => {
     const train = {
       name: 'ST1',
-      times: ['9:36', '10:37', '23:59', '00:00'],
+      times: ['09:36', '10:37', '23:59', '00:00'],
     }
     const res = await request.post('/api/trains').send({ data: train })
 
@@ -75,19 +75,40 @@ describe('POST /api/trains', () => {
 })
 
 describe('GET /api/trains/overlaps/:after', () => {
-  it('has a time with multiple trains arriving at a time', async () => {
+  it('returns first multiple train time after time', async () => {
     const seedDb = {
-      ST1: ['4:44', '5:55'],
-      ST2: ['3:33', '4:44', '5:55'],
-      ST3: ['3:33', '4:44', '5:55'],
+      ST1: { name: 'ST1', times: ['04:44', '05:55'] },
+      ST2: { name: 'ST3', times: ['03:33', '04:44', '05:55'] },
+      ST3: { name: 'ST3', times: ['03:33', '04:44', '05:55'] },
     }
     const app = createApp(seedDb)
     const request = supertest(app)
 
-    const res = await request.get('/api/trains/overlaps/2:22')
+    const res = await request.get('/api/trains/overlaps/02:22')
 
     expect(res.status).toEqual(200)
     const expectedDate = new Date()
+    expectedDate.setHours(3)
+    expectedDate.setMinutes(33)
+    expectedDate.setSeconds(0)
+    expectedDate.setMilliseconds(0)
+    expect(res.body.data).toEqual({ time: expectedDate.toISOString() })
+  })
+
+  it('returns first multiple train time on next day if none after given time', async () => {
+    const seedDb = {
+      ST1: { name: 'ST1', times: ['04:44', '05:55'] },
+      ST2: { name: 'ST2', times: ['03:33', '04:44', '05:55'] },
+      ST3: { name: 'ST3', times: ['03:33', '04:44', '05:55'] },
+    }
+    const app = createApp(seedDb)
+    const request = supertest(app)
+
+    const res = await request.get('/api/trains/overlaps/06:33')
+
+    expect(res.status).toEqual(200)
+    const expectedDate = new Date()
+    expectedDate.setDate(expectedDate.getDate() + 1)
     expectedDate.setHours(3)
     expectedDate.setMinutes(33)
     expectedDate.setSeconds(0)

@@ -25,6 +25,7 @@
     - request and store
   - Validate
     - Train already exists - 409
+    - Time duplicated - 400
     - Name malformed - 400
     - Missing name or times - 400
     - Bad time format or value - 400

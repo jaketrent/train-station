@@ -1,6 +1,7 @@
 import express from 'express'
 
 import { formatError, formatErrors, formatSuccess } from '../common/api.js'
+import { findNextTimeMultipleTrainsRun } from './trains-service.js'
 
 const app = express()
 
@@ -23,24 +24,44 @@ app.post('', (req, res) => {
 
 app.get('/overlaps/:after', (req, res) => {
   const db = req.app.get('db')
-  const [errors, after] = parseTime(req.params.after)
+  const after = req.params.after
 
-  if (hasErrors(errors)) {
-    res.status(400).json(formatErrors(errors))
+  // TODO: create validate method for message
+  if (!isValidTimeString(after)) {
+    res
+      .status(400)
+      .json(
+        formatErrors(
+          formatError(
+            'Time parameter ' +
+              timeString +
+              ' is malformed. Must be in hh:mm 24-hr format.'
+          )
+        )
+      )
   } else {
     const trains = db.keys().map((key) => db.fetch(key))
     const nextTime = findNextTimeMultipleTrainsRun(trains, after)
-    res.status(200).json(formatSuccess({ time: formatISO8601Time(nextTime) }))
+
+    res.status(200).json(
+      formatSuccess({
+        time:
+          nextTime < after
+            ? addOneDay(formatISO8601Time(nextTime))
+            : formatISO8601Time(nextTime),
+      })
+    )
   }
 })
 
-// TODO: create service tier, thin out controller
-function findNextTimeMultipleTrainsRun(trains, after) {
-  return '3:33'
+function addOneDay(date) {
+  const newDate = new Date(date)
+  newDate.setDate(newDate.getDate() + 1)
+  return newDate.toISOString()
 }
 
 function formatISO8601Time(timeString) {
-  const [, [hh, mm]] = parseTime(timeString)
+  const [, [hh, mm]] = parseTimeString(timeString)
   const date = new Date()
   date.setHours(hh)
   date.setMinutes(mm)
@@ -49,10 +70,10 @@ function formatISO8601Time(timeString) {
   return date.toISOString()
 }
 
-function parseTime(timeString) {
+function parseTimeString(timeString) {
   const time = timeString.split(':').map((n) => parseInt(n, 10))
   return [
-    isValidTime(timeString)
+    isValidTimeString(timeString)
       ? undefined
       : formatError(
           'Train time ' +
@@ -63,10 +84,10 @@ function parseTime(timeString) {
   ]
 }
 
-function isValidTime(timeString) {
+function isValidTimeString(timeString) {
   const [hh, mm] = timeString.split(':').map((n) => parseInt(n, 10))
   return (
-    /^[0-9]{1,2}:[0-9]{1,2}$/.test(timeString) &&
+    /^[0-9]{2}:[0-9]{2}$/.test(timeString) &&
     hh >= 0 &&
     hh <= 23 &&
     mm >= 0 &&
@@ -102,7 +123,7 @@ export function validateTrainName(name) {
 export function validateTrainTimes(times) {
   if (!Array.isArray(times)) return formatError('Train times is required')
 
-  const errors = times.map((time) => parseTime(time)[0])
+  const errors = times.map((time) => parseTimeString(time)[0])
 
   return errors
 }
