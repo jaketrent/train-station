@@ -125,7 +125,12 @@ export function validateTrainTimes(times) {
 
   const errors = times.map((time) => parseTimeString(time)[0])
 
-  return errors
+  const areTimesUnique = times.length === [...new Set(times)].length
+  if (!areTimesUnique) {
+    errors.push(formatError('Train times must be unique'))
+  }
+
+  return errors.filter(Boolean)
 }
 
 export default app

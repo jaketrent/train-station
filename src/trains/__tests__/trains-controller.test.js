@@ -55,4 +55,10 @@ describe('#validateTrainTimes', () => {
       ),
     ])
   })
+
+  it('returns errors duplicate times', () => {
+    expect(validateTrainTimes(['03:33', '03:33'])).toEqual([
+      formatError('Train times must be unique'),
+    ])
+  })
 })
