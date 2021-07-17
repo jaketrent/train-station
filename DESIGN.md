@@ -36,6 +36,8 @@
   - Same schedule every day
   - After last time in day multiple trains arrive, return first time of next day
   - No time overlaps, return no time 
+  - Validate
+    - Malformed time param - 400
 - Persistence
   - db.set(key, value) - set value at key
   - db.fetch(key) - return value at key

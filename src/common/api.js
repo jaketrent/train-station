@@ -6,6 +6,6 @@ export function formatErrors(errors) {
   return { errors }
 }
 
-export function formatSuccess(train) {
-  return { data: train }
+export function formatSuccess(data) {
+  return { data }
 }

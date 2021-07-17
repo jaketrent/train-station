@@ -73,3 +73,25 @@ describe('POST /api/trains', () => {
     expect(res.body.data).toEqual(train)
   })
 })
+
+describe('GET /api/trains/overlaps/:after', () => {
+  it('has a time with multiple trains arriving at a time', async () => {
+    const seedDb = {
+      ST1: ['4:44', '5:55'],
+      ST2: ['3:33', '4:44', '5:55'],
+      ST3: ['3:33', '4:44', '5:55'],
+    }
+    const app = createApp(seedDb)
+    const request = supertest(app)
+
+    const res = await request.get('/api/trains/overlaps/2:22')
+
+    expect(res.status).toEqual(200)
+    const expectedDate = new Date()
+    expectedDate.setHours(3)
+    expectedDate.setMinutes(33)
+    expectedDate.setSeconds(0)
+    expectedDate.setMilliseconds(0)
+    expect(res.body.data).toEqual({ time: expectedDate.toISOString() })
+  })
+})

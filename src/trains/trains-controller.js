@@ -21,8 +21,61 @@ app.post('', (req, res) => {
   }
 })
 
+app.get('/overlaps/:after', (req, res) => {
+  const db = req.app.get('db')
+  const [errors, after] = parseTime(req.params.after)
+
+  if (hasErrors(errors)) {
+    res.status(400).json(formatErrors(errors))
+  } else {
+    const trains = db.keys().map((key) => db.fetch(key))
+    const nextTime = findNextTimeMultipleTrainsRun(trains, after)
+    res.status(200).json(formatSuccess({ time: formatISO8601Time(nextTime) }))
+  }
+})
+
+// TODO: create service tier, thin out controller
+function findNextTimeMultipleTrainsRun(trains, after) {
+  return '3:33'
+}
+
+function formatISO8601Time(timeString) {
+  const [, [hh, mm]] = parseTime(timeString)
+  const date = new Date()
+  date.setHours(hh)
+  date.setMinutes(mm)
+  date.setSeconds(0)
+  date.setMilliseconds(0)
+  return date.toISOString()
+}
+
+function parseTime(timeString) {
+  const time = timeString.split(':').map((n) => parseInt(n, 10))
+  return [
+    isValidTime(timeString)
+      ? undefined
+      : formatError(
+          'Train time ' +
+            timeString +
+            ' is malformed. Must be in hh:mm 24-hr format.'
+        ),
+    time,
+  ]
+}
+
+function isValidTime(timeString) {
+  const [hh, mm] = timeString.split(':').map((n) => parseInt(n, 10))
+  return (
+    /^[0-9]{1,2}:[0-9]{1,2}$/.test(timeString) &&
+    hh >= 0 &&
+    hh <= 23 &&
+    mm >= 0 &&
+    mm <= 59
+  )
+}
+
 function hasErrors(errors) {
-  return errors.length > 0
+  return Array.isArray(errors) && errors.length > 0
 }
 
 function validateJson(body) {
@@ -49,21 +102,8 @@ export function validateTrainName(name) {
 export function validateTrainTimes(times) {
   if (!Array.isArray(times)) return formatError('Train times is required')
 
-  const errors = times.map((time) => {
-    const [hh, mm] = time.split(':').map((n) => parseInt(n, 10))
-    if (
-      /^[0-9]{1,2}:[0-9]{1,2}$/.test(time) &&
-      hh >= 0 &&
-      hh <= 23 &&
-      mm >= 0 &&
-      mm <= 59
-    )
-      return
-    else
-      return formatError(
-        'Train time ' + time + ' is malformed. Must be in hh:mm 24-hr format.'
-      )
-  })
+  const errors = times.map((time) => parseTime(time)[0])
+
   return errors
 }
 
