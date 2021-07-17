@@ -1,0 +1,47 @@
+# Design notes
+
+- Node.js, ESM, express, jest, supertest
+- 1 station
+- Many trains (ignore lines)
+- Service
+  - No user auth
+  - Any dependencies
+- Testing
+  - Functional test api request-db-response
+    - createApp(): app - separate from running
+    - main - http.createServer(createApp()).listen()
+    - supertest(app)
+  - Integration test db
+    - Init with state
+- Create new train
+  - POST /api/train
+  - HTTP 201
+  - Name
+    - Alphanumeric
+    - 4 char max
+  - Times running
+    - ISO-8601 - UTC (no timezone)
+    - https://en.wikipedia.org/wiki/ISO_8601
+    - eg, 2021-07-16T23:11:00Z
+      - Zero-padded
+      - 24 hr time
+      - Seconds always zero - minute resolution
+      - Z-only suffix for UTC
+  - Validate
+    - Name malformed - 400
+    - Missing name or times - 400
+    - Bad time format or value - 400
+- Find next time multiple trains arrive at same minute
+  - GET /api/train/overlaps/:time
+  - Param: time
+  - Return timestamp
+    - HTTP 200
+  - Same schedule every day
+  - After last time in day multiple trains arrive, return first time of next day
+  - No time overlaps, return no time 
+- Persistence
+  - db.set(key, value) - set value at key
+  - db.fetch(key) - return value at key
+  - db.keys() - get all keys
+  - No more methods
+  - Store in JS, in memory; store time as native Dates
