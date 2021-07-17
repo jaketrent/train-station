@@ -28,6 +28,7 @@
       - Seconds always zero - minute resolution
       - Z-only suffix for UTC
   - Validate
+    - Train already exists - 409
     - Name malformed - 400
     - Missing name or times - 400
     - Bad time format or value - 400
