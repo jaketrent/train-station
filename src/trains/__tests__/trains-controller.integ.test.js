@@ -1,6 +1,12 @@
 import supertest from 'supertest'
 
 import { createApp } from '../../app.js'
+import {
+  formatDate,
+  setTimeOnDate,
+  today,
+  tomorrow,
+} from '../../common/date-time.js'
 
 describe('POST /api/trains', () => {
   let request
@@ -87,12 +93,8 @@ describe('GET /api/trains/overlaps/:after', () => {
     const res = await request.get('/api/trains/overlaps/02:22')
 
     expect(res.status).toEqual(200)
-    const expectedDate = new Date()
-    expectedDate.setHours(3)
-    expectedDate.setMinutes(33)
-    expectedDate.setSeconds(0)
-    expectedDate.setMilliseconds(0)
-    expect(res.body.data).toEqual({ time: expectedDate.toISOString() })
+    const expectedDate = formatDate(setTimeOnDate(today(), '03:33'))
+    expect(res.body.data).toEqual({ time: expectedDate })
   })
 
   it('returns first multiple train time on next day if none after given time', async () => {
@@ -107,12 +109,7 @@ describe('GET /api/trains/overlaps/:after', () => {
     const res = await request.get('/api/trains/overlaps/06:33')
 
     expect(res.status).toEqual(200)
-    const expectedDate = new Date()
-    expectedDate.setDate(expectedDate.getDate() + 1)
-    expectedDate.setHours(3)
-    expectedDate.setMinutes(33)
-    expectedDate.setSeconds(0)
-    expectedDate.setMilliseconds(0)
-    expect(res.body.data).toEqual({ time: expectedDate.toISOString() })
+    const expectedDate = formatDate(setTimeOnDate(tomorrow(), '03:33'))
+    expect(res.body.data).toEqual({ time: expectedDate })
   })
 })

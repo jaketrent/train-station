@@ -1,6 +1,13 @@
 import express from 'express'
 
 import { formatError, formatErrors, formatSuccess } from '../common/api.js'
+import {
+  today,
+  tomorrow,
+  setTimeOnDate,
+  formatDate,
+  isValidTimeString,
+} from '../common/date-time.js'
 import { findNextTimeMultipleTrainsRun } from './trains-service.js'
 
 const app = express()
@@ -43,29 +50,6 @@ app.get('/overlaps/:after', (req, res) => {
   }
 })
 
-function today() {
-  return new Date()
-}
-
-function tomorrow() {
-  const date = new Date()
-  date.setDate(date.getDate() + 1)
-  return date
-}
-
-function setTimeOnDate(date, timeString) {
-  const [hh, mm] = parseTimeString(timeString)
-  date.setHours(hh)
-  date.setMinutes(mm)
-  date.setSeconds(0)
-  date.setMilliseconds(0)
-  return date
-}
-
-function formatDate(date) {
-  return date.toISOString()
-}
-
 function validateTimeString(timeString) {
   return isValidTimeString(timeString)
     ? undefined
@@ -74,21 +58,6 @@ function validateTimeString(timeString) {
           timeString +
           ' is malformed. Must be in hh:mm 24-hr format.'
       )
-}
-
-function parseTimeString(timeString) {
-  return timeString.split(':').map((n) => parseInt(n, 10))
-}
-
-function isValidTimeString(timeString) {
-  const [hh, mm] = parseTimeString(timeString)
-  return (
-    /^[0-9]{2}:[0-9]{2}$/.test(timeString) &&
-    hh >= 0 &&
-    hh <= 23 &&
-    mm >= 0 &&
-    mm <= 59
-  )
 }
 
 function hasErrors(errors) {
