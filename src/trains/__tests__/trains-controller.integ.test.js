@@ -2,7 +2,7 @@ import supertest from 'supertest'
 
 import { createApp } from '../../app.js'
 
-describe('GET /api/trains', () => {
+describe('POST /api/trains', () => {
   let request
 
   beforeAll(() => {
@@ -10,10 +10,25 @@ describe('GET /api/trains', () => {
     request = supertest(app)
   })
 
-  it('returns json', async () => {
-    const res = await request.get('/api/trains')
+  it('creates new train', async () => {
+    const train = {
+      name: 'ST1',
+      times: [stringTimeAt(9, 36), stringTimeAt(10, 37)],
+    }
+    const res = await request.post('/api/trains').send({ data: train })
 
-    expect(res.status).toEqual(200)
-    expect(res.body).toEqual({ wow: 'trains' })
+    expect(res.status).toEqual(201)
+    expect(res.body).toEqual({ data: train })
   })
 })
+
+function stringTimeAt(hr, min) {
+  return timeAt(hr, min).toISOString()
+}
+
+function timeAt(hr, min) {
+  const d = new Date()
+  d.setHours(hr)
+  d.setMinutes(min)
+  return d
+}
