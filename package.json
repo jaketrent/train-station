@@ -1,0 +1,20 @@
+{
+  "name": "train-station",
+  "version": "1.0.0",
+  "description": "demo api",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "jest",
+    "test:watch": "npm test -- --watch"
+  },
+  "author": "jaketrent",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "jest": "^27.0.6",
+    "supertest": "^6.1.3"
+  }
+}
