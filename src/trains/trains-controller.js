@@ -50,6 +50,12 @@ app.get('/overlaps/:after', (req, res) => {
   }
 })
 
+app.get('', (req, res) => {
+  const db = req.app.get('db')
+  const trains = db.keys().map((key) => db.fetch(key))
+  res.status(200).json(formatSuccess(trains))
+})
+
 function validateTimeString(timeString) {
   return isValidTimeString(timeString)
     ? undefined
