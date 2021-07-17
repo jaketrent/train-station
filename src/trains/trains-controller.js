@@ -7,7 +7,7 @@ const app = express()
 
 app.post('', (req, res) => {
   const db = req.app.get('db')
-  const [errors, train] = validateJson(req.body)
+  const [errors, train] = validatePostBody(req.body)
   if (hasErrors(errors)) {
     res.status(400).json(formatErrors(errors))
   } else if (db.fetch(train.name)) {
@@ -25,67 +25,63 @@ app.post('', (req, res) => {
 app.get('/overlaps/:after', (req, res) => {
   const db = req.app.get('db')
   const after = req.params.after
+  const errors = validateTimeString(after)
 
-  // TODO: create validate method for message
-  if (!isValidTimeString(after)) {
-    res
-      .status(400)
-      .json(
-        formatErrors(
-          formatError(
-            'Time parameter ' +
-              timeString +
-              ' is malformed. Must be in hh:mm 24-hr format.'
-          )
-        )
-      )
+  if (hasErrors(errors)) {
+    res.status(400).json(formatErrors(errors))
   } else {
     const trains = db.keys().map((key) => db.fetch(key))
     const nextTime = findNextTimeMultipleTrainsRun(trains, after)
 
     res.status(200).json(
       formatSuccess({
-        time:
-          nextTime < after
-            ? addOneDay(formatISO8601Time(nextTime))
-            : formatISO8601Time(nextTime),
+        time: formatDate(
+          setTimeOnDate(nextTime < after ? tomorrow() : today(), nextTime)
+        ),
       })
     )
   }
 })
 
-function addOneDay(date) {
-  const newDate = new Date(date)
-  newDate.setDate(newDate.getDate() + 1)
-  return newDate.toISOString()
+function today() {
+  return new Date()
 }
 
-function formatISO8601Time(timeString) {
-  const [, [hh, mm]] = parseTimeString(timeString)
+function tomorrow() {
   const date = new Date()
+  date.setDate(date.getDate() + 1)
+  return date
+}
+
+function setTimeOnDate(date, timeString) {
+  const [hh, mm] = parseTimeString(timeString)
   date.setHours(hh)
   date.setMinutes(mm)
   date.setSeconds(0)
   date.setMilliseconds(0)
+  return date
+}
+
+function formatDate(date) {
   return date.toISOString()
 }
 
+function validateTimeString(timeString) {
+  return isValidTimeString(timeString)
+    ? undefined
+    : formatError(
+        'Train time ' +
+          timeString +
+          ' is malformed. Must be in hh:mm 24-hr format.'
+      )
+}
+
 function parseTimeString(timeString) {
-  const time = timeString.split(':').map((n) => parseInt(n, 10))
-  return [
-    isValidTimeString(timeString)
-      ? undefined
-      : formatError(
-          'Train time ' +
-            timeString +
-            ' is malformed. Must be in hh:mm 24-hr format.'
-        ),
-    time,
-  ]
+  return timeString.split(':').map((n) => parseInt(n, 10))
 }
 
 function isValidTimeString(timeString) {
-  const [hh, mm] = timeString.split(':').map((n) => parseInt(n, 10))
+  const [hh, mm] = parseTimeString(timeString)
   return (
     /^[0-9]{2}:[0-9]{2}$/.test(timeString) &&
     hh >= 0 &&
@@ -99,7 +95,7 @@ function hasErrors(errors) {
   return Array.isArray(errors) && errors.length > 0
 }
 
-function validateJson(body) {
+function validatePostBody(body) {
   if (!('data' in body)) return [[formatError('Malformed request')]]
 
   const errors = [
@@ -123,7 +119,7 @@ export function validateTrainName(name) {
 export function validateTrainTimes(times) {
   if (!Array.isArray(times)) return formatError('Train times is required')
 
-  const errors = times.map((time) => parseTimeString(time)[0])
+  const errors = times.map((time) => validateTimeString(time))
 
   const areTimesUnique = times.length === [...new Set(times)].length
   if (!areTimesUnique) {
