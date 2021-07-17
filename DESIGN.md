@@ -20,13 +20,9 @@
     - Alphanumeric
     - 4 char max
   - Times running
-    - ISO-8601 - UTC (no timezone)
-    - https://en.wikipedia.org/wiki/ISO_8601
-    - eg, 2021-07-16T23:11:00Z
-      - Zero-padded
-      - 24 hr time
-      - Seconds always zero - minute resolution
-      - Z-only suffix for UTC
+    - hh:mm
+    - 24 hrs
+    - request and store
   - Validate
     - Train already exists - 409
     - Name malformed - 400
@@ -34,8 +30,8 @@
     - Bad time format or value - 400
 - Find next time multiple trains arrive at same minute
   - GET /api/train/overlaps/:time
-  - Param: time
-  - Return timestamp
+  - Param: time: hh:mm
+  - Return timestamp - today or next day, depending - ISO8601
     - HTTP 200
   - Same schedule every day
   - After last time in day multiple trains arrive, return first time of next day

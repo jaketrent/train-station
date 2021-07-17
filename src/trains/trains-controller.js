@@ -49,11 +49,21 @@ export function validateTrainName(name) {
 export function validateTrainTimes(times) {
   if (!Array.isArray(times)) return formatError('Train times is required')
 
-  const errors = times.map(
-    (time) =>
-      isNaN(new Date(time).getTime()) &&
-      formatError('Train time ' + time + ' is malformed')
-  )
+  const errors = times.map((time) => {
+    const [hh, mm] = time.split(':').map((n) => parseInt(n, 10))
+    if (
+      /^[0-9]{1,2}:[0-9]{1,2}$/.test(time) &&
+      hh >= 0 &&
+      hh <= 23 &&
+      mm >= 0 &&
+      mm <= 59
+    )
+      return
+    else
+      return formatError(
+        'Train time ' + time + ' is malformed. Must be in hh:mm 24-hr format.'
+      )
+  })
   return errors
 }
 

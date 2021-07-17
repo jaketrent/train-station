@@ -6,7 +6,7 @@ describe('POST /api/trains', () => {
   let request
   const existingTrain = {
     name: 'EXST',
-    times: [stringTimeAt(3, 33)],
+    times: ['3:33'],
   }
 
   beforeAll(() => {
@@ -34,21 +34,24 @@ describe('POST /api/trains', () => {
 
     test('bad name and times', async () => {
       const train = {
-        times: ['badDatetime', stringTimeAt(2, 23)],
+        times: ['badDatetime', '2:23'],
       }
       const res = await request.post('/api/trains').send({ data: train })
 
       expect(res.status).toEqual(400)
       expect(res.body.errors).toEqual([
         { title: 'Train name is required' },
-        { title: 'Train time badDatetime is malformed' },
+        {
+          title:
+            'Train time badDatetime is malformed. Must be in hh:mm 24-hr format.',
+        },
       ])
     })
 
-    test('bad name and times', async () => {
+    test('pre-existing train', async () => {
       const train = {
         name: existingTrain.name,
-        times: [stringTimeAt(8, 41)],
+        times: ['8:41'],
       }
       const res = await request.post('/api/trains').send({ data: train })
 
@@ -62,7 +65,7 @@ describe('POST /api/trains', () => {
   it('creates new train', async () => {
     const train = {
       name: 'ST1',
-      times: [stringTimeAt(9, 36), stringTimeAt(10, 37)],
+      times: ['9:36', '10:37', '23:59', '00:00'],
     }
     const res = await request.post('/api/trains').send({ data: train })
 
@@ -70,14 +73,3 @@ describe('POST /api/trains', () => {
     expect(res.body.data).toEqual(train)
   })
 })
-
-function stringTimeAt(hr, min) {
-  return timeAt(hr, min).toISOString()
-}
-
-function timeAt(hr, min) {
-  const d = new Date()
-  d.setHours(hr)
-  d.setMinutes(min)
-  return d
-}

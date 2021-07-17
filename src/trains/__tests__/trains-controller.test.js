@@ -34,19 +34,22 @@ describe('#validateTrainTimes', () => {
     )
   })
 
-  it('returns error for malformed datetimes', () => {
-    expect(validateTrainTimes(['notADate'])).toEqual([
-      formatError('Train time notADate is malformed'),
-    ])
-  })
-
-  it('returns errors per datetime', () => {
+  it('returns errors for malformed datetimes', () => {
     expect(
-      validateTrainTimes(['notADate', 'stillNot', '1234-15-44T25:70:90Z'])
+      validateTrainTimes(['notADate', '123:123', '25:60', '03:30PM'])
     ).toEqual([
-      formatError('Train time notADate is malformed'),
-      formatError('Train time stillNot is malformed'),
-      formatError('Train time 1234-15-44T25:70:90Z is malformed'),
+      formatError(
+        'Train time notADate is malformed. Must be in hh:mm 24-hr format.'
+      ),
+      formatError(
+        'Train time 123:123 is malformed. Must be in hh:mm 24-hr format.'
+      ),
+      formatError(
+        'Train time 25:60 is malformed. Must be in hh:mm 24-hr format.'
+      ),
+      formatError(
+        'Train time 03:30PM is malformed. Must be in hh:mm 24-hr format.'
+      ),
     ])
   })
 })
