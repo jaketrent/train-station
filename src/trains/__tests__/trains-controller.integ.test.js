@@ -115,7 +115,7 @@ describe('GET /api/trains/overlaps/:after', () => {
 })
 
 describe('GET /api/trains', () => {
-  it('returns first multiple train time after time', async () => {
+  it('returns a list of trains', async () => {
     const seedDb = {
       ST1: { name: 'ST1', times: ['04:44', '05:55'] },
       ST2: { name: 'ST3', times: ['03:33', '04:44', '05:55'] },
