@@ -11,10 +11,10 @@ describe('#findNextTimeMultipleTrainsRun', () => {
       findNextTimeMultipleTrainsRun(
         [
           { name: 'ST1', times: [] },
-          { name: 'ST2', times: ['1:11'] },
-          { name: 'ST3', times: ['1:12'] },
+          { name: 'ST2', times: ['01:11'] },
+          { name: 'ST3', times: ['01:12'] },
         ],
-        '2:22'
+        '02:22'
       )
     ).toBeUndefined()
   })
@@ -24,24 +24,24 @@ describe('#findNextTimeMultipleTrainsRun', () => {
       findNextTimeMultipleTrainsRun(
         [
           { name: 'ST1', times: [] },
-          { name: 'ST2', times: ['3:32', '3:34'] },
-          { name: 'ST3', times: ['3:31', '3:32', '3:34'] },
+          { name: 'ST2', times: ['03:32', '03:34'] },
+          { name: 'ST3', times: ['03:31', '03:32', '03:34'] },
         ],
-        '2:22'
+        '02:22'
       )
-    ).toEqual('3:32')
+    ).toEqual('03:32')
   })
 
-  it('finds first overlap if none overlap after given time', () => {
+  it('finds first overlap if no overlap after given time', () => {
     expect(
       findNextTimeMultipleTrainsRun(
         [
           { name: 'ST1', times: [] },
-          { name: 'ST2', times: ['3:32', '3:34'] },
-          { name: 'ST3', times: ['3:31', '3:32', '3:34'] },
+          { name: 'ST2', times: ['03:32', '03:34'] },
+          { name: 'ST3', times: ['03:31', '03:32', '03:34'] },
         ],
-        '3:34'
+        '03:34'
       )
-    ).toEqual('3:32')
+    ).toEqual('03:32')
   })
 })
