@@ -81,6 +81,22 @@ describe('POST /api/trains', () => {
 })
 
 describe('GET /api/trains/overlaps/:after', () => {
+  it('returns empty time if no overlap', async () => {
+    const seedDb = {
+      ST1: { name: 'ST1', times: ['04:44'] },
+      ST2: { name: 'ST3', times: ['03:33', '04:45'] },
+      ST3: { name: 'ST3', times: ['04:46', '05:55'] },
+    }
+    const app = createApp(seedDb)
+    const request = supertest(app)
+
+    const res = await request.get('/api/trains/overlaps/02:22')
+
+    expect(res.status).toEqual(200)
+    const expectedDate = formatDate(setTimeOnDate(today(), '03:33'))
+    expect(res.body.data).toEqual({ time: undefined })
+  })
+
   it('returns first multiple train time after time', async () => {
     const seedDb = {
       ST1: { name: 'ST1', times: ['04:44', '05:55'] },

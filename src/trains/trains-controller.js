@@ -42,9 +42,11 @@ app.get('/overlaps/:after', (req, res) => {
 
     res.status(200).json(
       formatSuccess({
-        time: formatDate(
-          setTimeOnDate(nextTime < after ? tomorrow() : today(), nextTime)
-        ),
+        time:
+          nextTime &&
+          formatDate(
+            setTimeOnDate(nextTime < after ? tomorrow() : today(), nextTime)
+          ),
       })
     )
   }
